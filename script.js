@@ -500,6 +500,7 @@ class CreateBoardButtons extends RenderComponent {
       "Ź",
       "Ż",
     ];
+
     let num = Math.floor(Math.random() * Pl.length);
     let drawedLetter = Pl[num];
     console.log("wylosowany index to " + num + " a litera to: " + drawedLetter);
@@ -537,6 +538,12 @@ class CreateBoardButtons extends RenderComponent {
 class GameLogic extends RenderComponent {
   constructor(listOfWords) {
     super();
+    if (GameLogic.exists) {
+      return GameLogic.instance;
+    }
+    GameLogic.exists = true;
+    GameLogic.instance = this;
+
     this.rightWords = listOfWords;
     this.ammountOfWords = this.rightWords.length;
     this.guessedWord = "";
@@ -547,20 +554,28 @@ class GameLogic extends RenderComponent {
       this.guessedWord,
       this.score
     );
+    return this;
   }
 
   createWord(letter) {
     this.guessedWord = this.guessedWord + letter;
     console.log(this.guessedWord);
-    this.checkWord();
+    // this.checkWord();
   }
 
   checkWord() {
     const isCorrectWord = this.rightWords.includes(
       this.guessedWord.toLocaleLowerCase()
     );
-    console.log(isCorrectWord);
-    isCorrectWord ? this.correctWord() : console.log("try harder");
+    console.log(
+      "czy " +
+        this.guessedWord +
+        "  jest poprawne z " +
+        this.rightWords +
+        " ? odp: " +
+        isCorrectWord
+    );
+    isCorrectWord ? this.correctWord() : this.enableButtons();
   }
 
   correctWord() {
@@ -599,7 +614,8 @@ class BoardFunctionButtons {
   boardActionButtons = Array.from(document.querySelectorAll(".actionButton"));
 
   addAction() {
-    console.log("zroibono array");
+    const clear = new ClearBoard();
+    console.log("zrobiono array");
     this.boardActionButtons.forEach((singleButton) => {
       singleButton.addEventListener("click", () => {
         console.log(singleButton.classList[1]);
@@ -610,28 +626,31 @@ class BoardFunctionButtons {
           endGame: this.endGame,
         };
 
-        events[singleButton.classList[1]]() ?? "to nie żaden button";
+        events[singleButton.classList[1]](clear) ?? "to nie żaden button";
       });
     });
   }
 
-  backToMenu() {
+  backToMenu(clear) {
     console.log(`button back to menu `);
     document.location.reload();
   }
 
-  newGame() {
-    console.log(`button new game `);
-    let clear = new ClearBoard();
+  newGame(clear) {
+    console.log(`button new game`);
     clear.clearButtons();
     clear.clearList();
   }
 
-  checkingWord() {
+  checkingWord(clear) {
     console.log(`button check `);
+
+    let buttonLogic = new GameLogic();
+    buttonLogic.checkWord();
+    // clear.clearButtons();
   }
 
-  endGame() {
+  endGame(clear) {
     console.log(`button end game`);
   }
 }
