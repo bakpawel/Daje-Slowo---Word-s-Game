@@ -616,6 +616,11 @@ class BoardFunctionButtons {
   addAction() {
     const clear = new ClearBoard();
     console.log("zrobiono array");
+    document.addEventListener("keypress", function (e) {
+      if (e.key === " ") {
+        document.querySelector(".checkingWord").click();
+      }
+    });
     this.boardActionButtons.forEach((singleButton) => {
       singleButton.addEventListener("click", () => {
         console.log(singleButton.classList[1]);
@@ -631,7 +636,7 @@ class BoardFunctionButtons {
     });
   }
 
-  backToMenu(clear) {
+  backToMenu() {
     console.log(`button back to menu `);
     document.location.reload();
   }
@@ -642,15 +647,14 @@ class BoardFunctionButtons {
     clear.clearList();
   }
 
-  checkingWord(clear) {
+  checkingWord() {
     console.log(`button check `);
 
     let buttonLogic = new GameLogic();
     buttonLogic.checkWord();
-    // clear.clearButtons();
   }
 
-  endGame(clear) {
+  endGame() {
     console.log(`button end game`);
   }
 }
