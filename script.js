@@ -545,9 +545,11 @@ class GameLogic extends RenderComponent {
     GameLogic.instance = this;
 
     this.rightWords = listOfWords;
-    this.ammountOfWords = this.rightWords.length;
+    this.maxPossibleScore = listOfWords.length;
     this.guessedWord = "";
     this.score = 0;
+    this.countPoints();
+
     console.log(
       this.rightWords,
       this.ammountOfWords,
@@ -583,6 +585,7 @@ class GameLogic extends RenderComponent {
     this.removeWord(this.guessedWord);
     this.renderWordOnList();
     this.enableButtons();
+    this.countPoints();
   }
 
   enableButtons() {
@@ -607,6 +610,19 @@ class GameLogic extends RenderComponent {
     listElement.innerText = this.guessedWord;
     console.log(listElement);
     this.hookId.appendChild(listElement);
+  }
+
+  countPoints(list) {
+    const pointsElement = document.querySelector(".points");
+    if (list) {
+      this.maxPossibleScore = list.length;
+    }
+    pointsElement.innerHTML = `<h1> ${this.score} / ${this.maxPossibleScore}</h1>`;
+  }
+
+  updateWordsList(arrayOfWords) {
+    console.log(arrayOfWords);
+    this.rightWords = arrayOfWords;
   }
 }
 
@@ -642,9 +658,15 @@ class BoardFunctionButtons {
   }
 
   newGame(clear) {
+    const arr = ["po", "ta", "to", "ma", "mam", "mu", "za", "do", "zoo", "tu"];
     console.log(`button new game`);
+    let buttonLogic = new GameLogic();
+    buttonLogic.updateWordsList(arr);
+    buttonLogic.countPoints(arr);
     clear.clearButtons();
+    buttonLogic.enableButtons();
     clear.clearList();
+    clear.clearPoints();
   }
 
   checkingWord() {
@@ -673,7 +695,13 @@ class ClearBoard {
     new CreateBoardButtons(".lettersContainer");
   }
 
-  clearPoints() {}
+  clearPoints() {
+    const gameLogic = new GameLogic();
+    gameLogic.score = 0;
+    console.log(gameLogic.score);
+    gameLogic.countPoints();
+    // gameLogic.ammountOfWords = gameLogic.listOfWords.length;
+  }
 
   clearWordsArray() {}
 }
