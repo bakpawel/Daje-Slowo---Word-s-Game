@@ -97,13 +97,13 @@ class RenderTableElements {
 /////////////////////////////////////////////////////////////////////////////////////////
 
 class RankingStorage {
-  constructor() {
+  constructor(earnedPoints) {
     this.rank = this.getRank();
     console.log(this.rank);
     // this.saveScore();
-    this.playerPoints = 12;
+    this.playerPoints = earnedPoints;
     this.playerName;
-    this.checkPosition();
+    // this.checkPosition();
   }
 
   getRank() {
@@ -124,7 +124,9 @@ class RankingStorage {
       return this.playerPoints > element.points ? true : false;
     });
     console.log(isPlacedInRank);
-    isPlacedInRank ? this.getNamePrompt() : console.log(`nie tym razem`);
+    isPlacedInRank
+      ? this.getNamePrompt()
+      : document.querySelector(".newGame").click();
   }
 
   getNamePrompt() {
@@ -177,11 +179,14 @@ class RankingStorage {
     console.dir(this.rank);
 
     localStorage.setItem("rank", JSON.stringify(this.rank));
+    this.upadetedRank();
+    document.querySelector(".newGame").click();
   }
 
-  renderRankTable() {}
-
-  clearRank() {}
+  upadetedRank() {
+    document.querySelector("table").innerHTML = "";
+    new StartPage().rankingStorage();
+  }
 }
 
 class InfoPages extends RenderComponent {
@@ -228,26 +233,7 @@ class InfoPages extends RenderComponent {
     }
   }
 }
-{
-  /* <tr>
-                    <th colspan="3">Ranking</th>
-                </tr>
-                <tr>
-                    <td class="rankPlace">1</td>
-                    <td class="rankName">BAQ</td>
-                    <td class="rankPoints">35</td>
-                </tr>
-                <tr>
-                    <td class="rankPlace">2</td>
-                    <td class="rankName">SAM</td>
-                    <td class="rankPoints">33</td>
-                </tr>
-                <tr>
-                    <td class="rankPlace">3</td>
-                    <td class="rankName">To miejsce czeka na Ciebie</td>
-                    <td class="rankPoints">0</td>
-                </tr> */
-}
+
 //renderowanie strony startowej
 
 class StartPage extends RenderComponent {
@@ -261,7 +247,7 @@ class StartPage extends RenderComponent {
 
   buttons() {
     new StartPageButtons(".buttonsRest");
-    const rankButton = document.querySelector(".bRank");
+    // const rankButton = document.querySelector(".bRank");
     // rankButton.addEventListener('click', this.rankingStorage);
     // console.log('czy to jest rank ? ' + rankButton);
   }
@@ -269,6 +255,7 @@ class StartPage extends RenderComponent {
   rankingStorage() {
     let renderRank = new RankingStorage();
     let rank = renderRank.getRank();
+
     console.log(rank);
     let renderTable = new RenderTableElements(
       document.querySelector("table"),
@@ -303,14 +290,7 @@ class StartPage extends RenderComponent {
             <a href="#">Li</a>
             <a href="#">Git</a>
         </footer>
-        <div class="prompt">        
-            <label for="name">
-                <p>Jesteś zwycięzcą!</p> 
-                <p>Podaj imię!</p>
-            </label>
-            <input id="name" type="text" maxlength="10">
-            <button class="submitName">Zapisz</button>
-        </div>`;
+        `;
 
     const startButton = document.getElementById("start");
     startButton.addEventListener("click", this.hideStartPage);
@@ -374,9 +354,8 @@ class BoardPageSkeleton extends RenderComponent {
     const boardGamePage = this.createRootElement("div", "board");
     boardGamePage.innerHTML = `
             <div class="topBar">
-                <button class="actionButton backToMenu">Back</button>
+                <button class="actionButton backToMenu">Wstecz</button>
                 <div class="points">
-                    <h1>0/0</h1>
                 </div>
                 <div class="score">34</div>
             </div>
@@ -401,6 +380,14 @@ class BoardPageSkeleton extends RenderComponent {
                     </ul>
                 </div>
             </div>
+            <div class="prompt">        
+            <label for="name">
+                <p>Jesteś zwycięzcą!</p> 
+                <p>Podaj imię!</p>
+            </label>
+            <input id="name" type="text" maxlength="10">
+            <button class="submitName">Zapisz</button>
+        </div>
             <!-- <footer class="footer">
                 <a href="#">Li</a>
                 <a href="#">Git</a>
@@ -429,6 +416,7 @@ class BoardPageSkeleton extends RenderComponent {
     this.createButtons();
     this.showBoard();
   }
+
   showBoard() {
     const board = document.querySelector(".board");
     const lettersContainer = document.querySelector(".lettersContainer");
@@ -445,13 +433,17 @@ class BoardPageSkeleton extends RenderComponent {
     const buttons = new BoardFunctionButtons();
     buttons.addAction();
   }
+  countPoints() {
+    const pointsElement = document.querySelector("points");
+    pointsElement.innerHTML = `<h1> ${this.score} / ${this.rightWords.length}</h1>`;
+  }
 }
 
 class CreateBoardButtons extends RenderComponent {
   constructor(hookId) {
     super(hookId);
     console.log(this.createdRows);
-    this.gamelogic = new GameLogic([
+    this.gameLogic = new GameLogic([
       "po",
       "ta",
       "to",
@@ -521,7 +513,7 @@ class CreateBoardButtons extends RenderComponent {
       button.addEventListener("click", () => {
         console.log(`Wybrano przycisk z literą ${button.innerText}`);
         button.setAttribute("disabled", "true");
-        this.gamelogic.createWord(button.innerText);
+        this.gameLogic.createWord(button.innerText);
       });
       row.appendChild(button);
     });
@@ -678,6 +670,9 @@ class BoardFunctionButtons {
 
   endGame() {
     console.log(`button end game`);
+
+    const earnedPoints = new GameLogic().score;
+    new RankingStorage(earnedPoints).checkPosition();
   }
 }
 
