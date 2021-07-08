@@ -180,6 +180,10 @@ class RankingStorage {
 
     localStorage.setItem("rank", JSON.stringify(this.rank));
     this.upadetedRank();
+
+    const displayedHighestScore = document.querySelector(".score");
+    displayedHighestScore.innerText = this.rank[0].points;
+
     document.querySelector(".newGame").click();
   }
 
@@ -395,6 +399,10 @@ class BoardPageSkeleton extends RenderComponent {
         `;
 
     const rank = document.querySelector(".score");
+
+    rank.innerText = JSON.parse(localStorage.getItem("rank"))
+      ? JSON.parse(localStorage.getItem("rank"))[0].points
+      : "0";
 
     rank.addEventListener("click", () => {
       const hook = document.querySelector(".rank");
