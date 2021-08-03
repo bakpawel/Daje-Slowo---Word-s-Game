@@ -709,6 +709,30 @@ class ClearBoard {
   clearWordsArray() {}
 }
 
+class ConnectToDatabase {
+  constructor(url, pattern, method) {
+    this.url = url;
+    this.regExPattern = pattern;
+    this.method = method;
+  }
+
+  fetchData() {
+    fetch(this.url + new URLSearchParams({ regex: this.regExPattern }), {
+      method: this.method,
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log(data);
+        let arr = [];
+
+        data.forEach((item) => {
+          arr.push(item.PL);
+        });
+        return arr;
+      });
+  }
+}
+
 class App {}
 
 const app = new StartPage("#app");
