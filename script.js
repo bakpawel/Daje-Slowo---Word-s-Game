@@ -243,8 +243,18 @@ class InfoPages extends RenderComponent {
 class StartPage extends RenderComponent {
   constructor(hookId) {
     super(hookId);
+    this.wakeUpDataBase();
   }
 
+  //Baza danych postawiona na mongoDB darmowym clusterze. Gdy przez pewien czas jest nieużywany zostaje uśpiony, należy go za pierwszym razem wybudzić - potem można używac bez potrzeby oczekiwania
+  wakeUpDataBase() {
+    let emptyQuery = new ConnectToDatabase(
+      "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
+      "/",
+      "POST"
+    );
+    emptyQuery.fetchData();
+  }
   infoPages() {
     new InfoPages("#app");
   }
@@ -423,6 +433,8 @@ class BoardPageSkeleton extends RenderComponent {
 
     this.createButtons();
     this.showBoard();
+    let addBoardLogic = new GameLogic();
+    addBoardLogic.getListOfCorrectWords();
   }
 
   showBoard() {
@@ -451,16 +463,6 @@ class CreateBoardButtons extends RenderComponent {
   constructor(hookId) {
     super(hookId);
     console.log(this.createdRows);
-    this.gameLogic = new GameLogic([
-      "po",
-      "ta",
-      "to",
-      "ma",
-      "mam",
-      "mu",
-      "za",
-      "do",
-    ]);
   }
 
   //losowanie litery
@@ -518,11 +520,11 @@ class CreateBoardButtons extends RenderComponent {
 
     buttons.forEach((button) => {
       button.innerText = this.drawLetter();
-      button.addEventListener("click", () => {
-        console.log(`Wybrano przycisk z literą ${button.innerText}`);
-        button.setAttribute("disabled", "true");
-        this.gameLogic.createWord(button.innerText);
-      });
+      // button.addEventListener("click", () => {
+      //   console.log(`Wybrano przycisk z literą ${button.innerText}`);
+      //   button.setAttribute("disabled", "true");
+      //   this.gameLogic.createWord(button.innerText);
+      // });
       row.appendChild(button);
     });
     return row;
@@ -536,19 +538,20 @@ class CreateBoardButtons extends RenderComponent {
 }
 
 class GameLogic extends RenderComponent {
-  constructor(listOfWords) {
+  constructor() {
     super();
     if (GameLogic.exists) {
       return GameLogic.instance;
     }
     GameLogic.exists = true;
     GameLogic.instance = this;
-
-    this.rightWords = listOfWords;
-    this.maxPossibleScore = listOfWords.length;
     this.guessedWord = "";
+    this.rightWords;
+    // this.getListOfCorrectWords();
+    this.maxPossibleScore;
     this.score = 0;
-    this.countPoints();
+    this.regExPattern = "";
+    this.addListenersToLetterButtons();
 
     console.log(
       this.rightWords,
@@ -559,6 +562,26 @@ class GameLogic extends RenderComponent {
     return this;
   }
 
+  async getListOfCorrectWords() {
+    this.regExPattern = new RegExBuildingEngine().finalRegEx;
+    console.log(this.regExPattern);
+    let connectionToDatabase = new ConnectToDatabase(
+      "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
+      this.regExPattern,
+      "POST"
+    );
+
+    let words = await connectionToDatabase.fetchData();
+    console.log("to sa words = " + words);
+    this.setValues(words);
+  }
+
+  setValues(listOfCorrectWords) {
+    this.rightWords = listOfCorrectWords;
+    console.log(listOfCorrectWords);
+    this.maxPossibleScore = listOfCorrectWords.length;
+    this.countPoints();
+  }
   createWord(letter) {
     this.guessedWord = this.guessedWord + letter;
     console.log(this.guessedWord);
@@ -566,9 +589,7 @@ class GameLogic extends RenderComponent {
   }
 
   checkWord() {
-    const isCorrectWord = this.rightWords.includes(
-      this.guessedWord.toLocaleLowerCase()
-    );
+    const isCorrectWord = this.rightWords.includes(this.guessedWord);
     console.log(
       "czy " +
         this.guessedWord +
@@ -588,6 +609,18 @@ class GameLogic extends RenderComponent {
     this.countPoints();
   }
 
+  addListenersToLetterButtons() {
+    const buttons = document.getElementsByClassName("letter");
+
+    Array.from(buttons).forEach((button) => {
+      button.addEventListener("click", () => {
+        console.log(`Wybrano przycisk z literą ${button.innerText}`);
+        button.setAttribute("disabled", "true");
+        this.createWord(button.innerText);
+      });
+    });
+  }
+
   enableButtons() {
     const buttons = document.getElementsByClassName("letter");
     Array.from(buttons).forEach((button) => {
@@ -597,9 +630,7 @@ class GameLogic extends RenderComponent {
   }
 
   removeWord(word) {
-    this.rightWords = this.rightWords.filter(
-      (element) => element != word.toLocaleLowerCase()
-    );
+    this.rightWords = this.rightWords.filter((element) => element != word);
     console.log(this.rightWords);
   }
 
@@ -658,15 +689,16 @@ class BoardFunctionButtons {
   }
 
   newGame(clear) {
-    const arr = ["po", "ta", "to", "ma", "mam", "mu", "za", "do", "zoo", "tu"];
     console.log(`button new game`);
     let buttonLogic = new GameLogic();
-    buttonLogic.updateWordsList(arr);
-    buttonLogic.countPoints(arr);
+    // buttonLogic.updateWordsList(arr);
+    // buttonLogic.countPoints(arr);
     clear.clearButtons();
     buttonLogic.enableButtons();
+    buttonLogic.addListenersToLetterButtons();
     clear.clearList();
     clear.clearPoints();
+    buttonLogic.getListOfCorrectWords();
   }
 
   checkingWord() {
@@ -716,20 +748,135 @@ class ConnectToDatabase {
     this.method = method;
   }
 
-  fetchData() {
-    fetch(this.url + new URLSearchParams({ regex: this.regExPattern }), {
+  async fetchData() {
+    // let url = this.url;
+    // let regExPattern = this.regExPattern;
+    // let method = this.method;
+
+    // async function example() {
+    //   let arr = [];
+    //   const diaryReq = await fetch(
+    //     url + new URLSearchParams({ regex: regExPattern }),
+    //     {
+    //       method: method,
+    //     }
+    //   );
+    //   let diaryData = await diaryReq.json();
+    //   let pushData = await diaryData.forEach((item) => {
+    //     arr.push(item.PL);
+    //   });
+    //   console.log(arr);
+    //   // const foodReqs = await Promise.all(diaryData.map(({foodid}) => fetch(foodURL + foodid)));
+    //   return arr;
+    // }
+    // example();
+
+    ////////////////////////////////////
+    // let request = async () => {
+    //   let arr = [];
+    //   let response = await fetch(
+    //     this.url + new URLSearchParams({ regex: this.regExPattern }),
+    //     {
+    //       method: this.method,
+    //     }
+    //   );
+
+    //   let json = await response.json();
+
+    //   let pushData = await json.forEach((item) => {
+    //     arr.push(item.PL);
+    //   });
+    //   await arr;
+    //   return arr;
+    // };
+    // // console.log(arr);
+
+    // console.log("To są słowa ");
+    // request();
+    //   }
+    // }
+
+    let arr = [];
+    await fetch(this.url + new URLSearchParams({ regex: this.regExPattern }), {
       method: this.method,
     })
       .then((response) => response.json())
       .then((data) => {
         console.log(data);
-        let arr = [];
 
         data.forEach((item) => {
           arr.push(item.PL);
         });
-        return arr;
+        console.dir("To są słowa " + arr);
       });
+    return arr;
+  }
+}
+
+class RegExBuildingEngine {
+  constructor() {
+    this.drawedLetters = this.lettersOnBoard();
+    this.baseRegEx = "^[]{2,9}$";
+    this.finalRegEx = "";
+    this.buildRegEx();
+  }
+
+  lettersOnBoard() {
+    let letterButtons = document.getElementsByClassName("letter");
+    let lettersOnBoard = [];
+    Array.from(letterButtons).forEach((button) => {
+      console.log(button);
+      console.log(button.innerText);
+      lettersOnBoard.push(button.innerText);
+    });
+    console.log("to jest letters z regexbuildingengine " + lettersOnBoard);
+    return lettersOnBoard;
+  }
+
+  howManyOfEachLetter(drawedLetters) {
+    let quantityLeters = {};
+    drawedLetters.forEach((value) => {
+      quantityLeters[`${value}`] = drawedLetters.filter(
+        (v) => v === value
+      ).length;
+    });
+    return quantityLeters;
+  }
+
+  buildRegEx() {
+    let regTemp = "";
+    let regTemp2 = "";
+    // let finalRegEx = "";
+    let lettersBase = this.howManyOfEachLetter(this.drawedLetters);
+    console.log(lettersBase);
+    //first part of regEx
+
+    for (let letter in lettersBase) {
+      // expected result example ---> (?!([^a]*a){3})
+      console.log(
+        "example - (?!([^a]*a){3})" +
+          " litera to " +
+          letter +
+          " całość tablicy to: " +
+          lettersBase
+      );
+      regTemp += `(?!([^${letter}]*${letter}){${lettersBase[letter] + 1}})`;
+    }
+
+    //second part of regEx
+
+    for (let letter in lettersBase) {
+      regTemp2 += `${letter}`;
+    }
+
+    this.baseRegEx =
+      this.baseRegEx.slice(0, 2) + regTemp2 + this.baseRegEx.slice(2);
+
+    this.finalRegEx =
+      this.baseRegEx.slice(0, 1) + regTemp + this.baseRegEx.slice(1);
+
+    console.log(this.finalRegEx);
+    return this.finalRegEx;
   }
 }
 
