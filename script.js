@@ -789,7 +789,6 @@ class ConnectToDatabase {
     //   await arr;
     //   return arr;
     // };
-    // // console.log(arr);
 
     // console.log("To są słowa ");
     // request();
