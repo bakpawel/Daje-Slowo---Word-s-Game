@@ -12,7 +12,7 @@ html{
 #app{
     width: 100vw;
     height: 100vh;
-    background-color: darkgoldenrod;
+    /* background-color: darkgoldenrod; */
     overflow: hidden;
 }
 button {
@@ -23,6 +23,8 @@ button {
 }
 
 .buttonStart> button{
+    background-color: rgb(22,245,240);
+    border-radius: 15px;
     width: 80%;
     height: 70%;
     font-size: large;
@@ -34,7 +36,7 @@ button {
 }
 
 .container{
-    background-color: aquamarine;
+    background-color: rgb(181,230,29);
     height: 100vh;
     justify-content: space-between;
     transition: all 0.5s ease-out;
@@ -43,15 +45,18 @@ button {
 
 .title{
     flex-direction: row;
-    font-family: 'Coiny', cursive;
+    font-family: 'Tenor Sans', sans-serif;
     text-align: center;
     flex-basis: 30%;
     font-size: 4em;
-    background-color: cadetblue;
+    height: fit-content;
+    /* background-color: cadetblue; */
 }
-
+.title >h1 {
+    padding: 10px;
+}
 .buttons{
-    background-color: darkgoldenrod;
+    /* background-color: darkgoldenrod; */
     justify-content: space-around;
     flex-basis:50%;
     width: 100vw;
@@ -59,7 +64,7 @@ button {
 }
 
 .buttonStart{ 
-    background-color: tomato;
+    /* background-color: tomato; */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -68,9 +73,17 @@ button {
 }
 
 .buttonsRest{
-    background-color: violet;
+    /* background-color: violet; */
     justify-content: space-between;
     flex-basis: 40%;
+}
+
+.bHowTo {
+    background-color: rgb(255,174,201);
+}
+
+.bRank {
+    background-color: rgb(231,184,12);
 }
 
 footer{
@@ -144,6 +157,29 @@ table {
 
 /* ............................KONIEC RANK I JAK GRAC  */
 
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+  }
+   
+#loading{
+    content: '';
+    box-sizing: border-box;
+    position: absolute;
+    z-index: 10;
+    /* margin-left: 0;
+    margin-right: 0; */
+    left: 46%;
+    top: 45%;
+    width: 50px;
+    height: 50px;
+    margin-top: -10px;
+    margin-left: -10px;
+    border-radius: 50%;
+    border-top: 2px solid #07d;
+    border-right: 2px solid transparent;
+    animation: spinner .6s linear infinite;
+  }
+  
 /* PROMPT */
 
 .prompt {
@@ -340,7 +376,7 @@ label{
 }
 @media screen and (orientation: landscape){
     .container{
-        background-color: yellow;
+        /* background-color: yellow; */
     }
     
     .buttonStart{

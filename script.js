@@ -396,16 +396,17 @@ class BoardPageSkeleton extends RenderComponent {
             </div>
             <div class="prompt">        
             <label for="name">
-                <p>Jesteś zwycięzcą!</p> 
-                <p>Podaj imię!</p>
+            <p>Jesteś zwycięzcą!</p> 
+            <p>Podaj imię!</p>
             </label>
             <input id="name" type="text" maxlength="10">
             <button class="submitName">Zapisz</button>
-        </div>
+            </div>
             <!-- <footer class="footer">
-                <a href="#">Li</a>
-                <a href="#">Git</a>
+            <a href="#">Li</a>
+            <a href="#">Git</a>
             </footer> -->
+            <span id="loading"></span>
         `;
 
     const rank = document.querySelector(".score");
@@ -551,6 +552,7 @@ class GameLogic extends RenderComponent {
     this.maxPossibleScore;
     this.score = 0;
     this.regExPattern = "";
+    this.isFetching = false;
     this.addListenersToLetterButtons();
 
     console.log(
@@ -565,6 +567,8 @@ class GameLogic extends RenderComponent {
   async getListOfCorrectWords() {
     this.regExPattern = new RegExBuildingEngine().finalRegEx;
     console.log(this.regExPattern);
+    this.isFetching = true;
+    this.loadingInfo();
     let connectionToDatabase = new ConnectToDatabase(
       "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
       this.regExPattern,
@@ -572,10 +576,23 @@ class GameLogic extends RenderComponent {
     );
 
     let words = await connectionToDatabase.fetchData();
+    this.isFetching = false;
+    this.loadingInfo();
     console.log("to sa words = " + words);
     this.setValues(words);
   }
 
+  loadingInfo() {
+    const loadingSpinner = document.getElementById("loading");
+    const pageMaskChange = new PageMask();
+    if (this.isFetching) {
+      pageMaskChange.maskSwitch(true);
+      loadingSpinner.style.display = "flex";
+    } else {
+      loadingSpinner.style.display = "none";
+      pageMaskChange.maskSwitch(false);
+    }
+  }
   setValues(listOfCorrectWords) {
     this.rightWords = listOfCorrectWords;
     console.log(listOfCorrectWords);
@@ -649,6 +666,9 @@ class GameLogic extends RenderComponent {
       this.maxPossibleScore = list.length;
     }
     pointsElement.innerHTML = `<h1> ${this.score} / ${this.maxPossibleScore}</h1>`;
+
+    // this.isFetching = false;
+    // this.loadingInfo();
   }
 
   updateWordsList(arrayOfWords) {
