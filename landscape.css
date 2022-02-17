@@ -1,0 +1,120 @@
+@media screen and (orientation: landscape){
+    .container{
+        background-image: radial-gradient( #36901b 0%, #000000 85%);
+    }
+    .title h1 {
+        font-size: 9rem;
+    }
+    
+    .buttonStart{
+        flex-basis: 50%;
+    }
+    #start {
+        font-size: 5rem;
+    }
+    .bHowTo, .bRank {
+        padding: 1rem 3rem;
+        font-size: 2rem;
+    }
+    .rank, .howTo {
+        width: 50%;
+    }
+    table{
+        width: 60%;
+    }
+    .buttonsRest{
+        width: 80%;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: center;
+    }
+
+    .show{
+        right: 25%;
+    }
+    .board{
+        justify-content: space-evenly;
+        
+    }
+    .points h1 {
+        font-size: 2rem;
+    }
+    .lettersContainer{
+        width: unset;
+        flex-basis: auto;
+    }
+    .row button, .letter {
+        width: 16vh;
+        height: 16vh;
+    }
+    .wordsList{
+        height: 50vh;
+        flex-basis: calc(15vh*3);
+        align-self: center;
+        overflow-y: initial;
+        border-radius: 10px;
+    }
+    .wordsList ul li{
+        font-size: 1.5rem;
+    }
+    .functionBar{
+        padding-bottom: 15px;
+        flex-basis: 100%;
+        flex-wrap: wrap;
+        order:1;
+        justify-content: space-evenly;
+        align-self:baseline;
+    }
+    .functionButtons{
+        margin-bottom: 20px;
+        display: flex;
+        flex-basis: 80%;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+
+    .actionButton {
+        padding: 2rem;
+        font-size: 1.5rem;
+        box-shadow: 0px 9px 0px #cc8003, 0px 9px 15px #fefc0ab3;
+    } 
+    .actionButton:active, .active {
+        box-shadow: 0 5px #885400 , 0px 9px 50px #fefc0ab3;
+        transform: translateY(4px);
+        
+    }
+    .topBar {
+        padding: 1rem;
+    }
+    .backToMenu, .score {
+        flex-basis: 20%;
+    }
+
+    .checkingWord{
+        padding: 2rem 4rem;
+        font-size: 2rem;
+    }
+    .newGame {
+        border-radius: 15px 50px;
+    }
+    
+    .endGame{
+        border-radius: 50px 15px;
+    }
+
+    .backToMenu, .score{
+        box-shadow: 0px 4px 0px #cc8003;
+    }
+    .media{
+        height: 50px;
+        width: 100%;
+        margin-top: 10px;
+        display: flex;
+        flex-basis: 50%;
+        justify-content: space-evenly;
+        align-items: center;
+    }
+    a{
+        margin: 1rem;
+    }
+}

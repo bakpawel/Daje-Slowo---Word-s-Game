@@ -1,7 +1,7 @@
-//Klasy Pomocniczne
+//Helping Classes
 /////////////////////////////////////////////////////////////////////////////////////////
 
-//1) do tworzenia szkieletu HTML
+//1) Contstructing HTML elements
 
 class AppElement {
   constructor(className, text, hook) {
@@ -11,7 +11,7 @@ class AppElement {
   }
 }
 
-//2) do tworzenia elemtenu i jego umiejscowienie w DOM
+//2) Creating page element and appending to DOM element
 
 class RenderComponent {
   constructor(hookId) {
@@ -30,6 +30,8 @@ class RenderComponent {
   }
 }
 
+//3) Masking page
+
 class PageMask {
   constructor(turnedOff) {
     this.turnedOff = turnedOff;
@@ -38,7 +40,6 @@ class PageMask {
   }
 
   maskSwitch(turnOnOff) {
-    console.log(turnOnOff);
     if (turnOnOff) {
       this.mask.style.display = "block";
       setTimeout(() => {
@@ -50,8 +51,6 @@ class PageMask {
         this.mask.style.display = "none";
       }, 500);
     }
-
-    // turnOnOff ? this.mask.classList.remove('page-mask-active') : this.mask.classList.add('page-mask-active');
   }
 }
 
@@ -66,24 +65,23 @@ class RenderTableElements {
   renderTableHead() {
     let thead = this.table.createTHead();
     let row = thead.insertRow();
+
     for (let val of this.headData) {
       let th = document.createElement("th");
-      let text = document.createTextNode(val);
-      th.appendChild(text);
+      th.innerHTML = val;
       row.appendChild(th);
     }
   }
 
   renderTable() {
-    // let tbody = this.table.createTBody();
     for (let element of this.bodyData) {
       let row = this.table.insertRow();
+
       for (let key in element) {
         let cell = row.insertCell();
         let text = document.createTextNode(element[key]);
         cell.appendChild(text);
       }
-      console.log(row);
     }
     this.renderTableHead();
   }
@@ -93,17 +91,14 @@ class RenderTableElements {
   }
 }
 
-//Koniec Klas Pomocniczych
+//End of Helpig Classes
 /////////////////////////////////////////////////////////////////////////////////////////
 
 class RankingStorage {
   constructor(earnedPoints) {
     this.rank = this.getRank();
-    console.log(this.rank);
-    // this.saveScore();
     this.playerPoints = earnedPoints;
     this.playerName;
-    // this.checkPosition();
   }
 
   getRank() {
@@ -120,49 +115,79 @@ class RankingStorage {
 
   checkPosition() {
     let isPlacedInRank = this.rank.some((element) => {
-      console.log(element.points);
       return this.playerPoints > element.points ? true : false;
     });
-    console.log(isPlacedInRank);
-    isPlacedInRank
-      ? this.getNamePrompt()
-      : document.querySelector(".newGame").click();
+
+    isPlacedInRank ? this.getNamePrompt() : this.getNamePrompt(true);
   }
 
-  getNamePrompt() {
+  getNamePrompt(disabled) {
     let prompt = document.querySelector(".prompt");
     let submitName = document.querySelector(".submitName");
+    let description = document.getElementById("PromptDescription");
     let inputName = document.getElementById("name");
-    prompt.style.zIndex = 1;
-    prompt.style.display = "flex";
 
+    if (disabled) {
+      description.innerHTML = "Spróbuj ponownie!";
+      inputName.value = "Nie tym razem :(";
+      inputName.disabled = true;
+      submitName.innerHTML = "Zamknij";
+    } else {
+      description.innerHTML = "Zwycięzca może być tylko jeden!";
+      inputName.value = "";
+      submitName.disabled = true;
+      submitName.innerHTML = "Zapisz";
+      inputName.addEventListener("keyup", correctName);
+    }
+    prompt.style.zIndex = 3;
+    prompt.style.display = "flex";
+    function correctName() {
+      if (inputName.value === "") {
+        submitName.disabled = true;
+      } else {
+        submitName.disabled = false;
+      }
+    }
     setTimeout(() => {
       prompt.classList.add("pop");
       new PageMask(true);
     }, 100);
 
-    // prompt.style.width = '60vw';
-    submitName.addEventListener("click", () => {
-      this.playerName = document.getElementById("name").value;
+    //referencja do powstałej funkcji, gdyż za każdym razem bind tworzy nowy obiekt i referencje do niego - gdyby bind() było w addEventListener nie można byłoby usunąć listenera (za kazdym razem powstawała by nowa referencja) -> listenery by się mnożyły za każdym kolejnym kliknięciem
+    let reference = promptCallback.bind(this);
+    let enterHitReference = enterHit.bind(this);
+
+    submitName.addEventListener("click", reference);
+    inputName.addEventListener("keyup", enterHitReference);
+
+    function promptCallback(e) {
+      e.stopPropagation();
+      let promptValue = inputName.value;
+      this.playerName = promptValue;
       setTimeout(() => {
         prompt.style.display = "none";
+        prompt.classList.remove("pop");
+        promptValue = "";
+        inputName.disabled = false;
       }, 100);
       new PageMask(false);
-      this.saveScore();
-    });
+      if (!disabled) {
+        this.saveScore();
+      }
+      submitName.removeEventListener("click", reference);
+      inputName.removeEventListener("keyup", enterHitReference);
+    }
 
-    inputName.addEventListener("keyup", function (e) {
+    function enterHit(e) {
       console.log(e);
+      e.stopPropagation();
       if (e.key === "Enter") {
         submitName.click();
       }
-    });
+    }
   }
 
   saveScore() {
-    // this.playerName = prompt('Podaj swoje imię!');
-    // console.log(this.playerName);
-    // this.rank.push();
     const newRecord = {
       points: this.playerPoints,
       name: this.playerName,
@@ -179,15 +204,13 @@ class RankingStorage {
     console.dir(this.rank);
 
     localStorage.setItem("rank", JSON.stringify(this.rank));
-    this.upadetedRank();
+    this.updatedRank();
 
     const displayedHighestScore = document.querySelector(".score");
-    displayedHighestScore.innerText = this.rank[0].points;
-
-    document.querySelector(".newGame").click();
+    displayedHighestScore.innerHTML = `<i class="fas fa-trophy"></i>${this.rank[0].points}`;
   }
 
-  upadetedRank() {
+  updatedRank() {
     document.querySelector("table").innerHTML = "";
     new StartPage().rankingStorage();
   }
@@ -201,8 +224,6 @@ class InfoPages extends RenderComponent {
     this.createPages();
   }
 
-  //tworzenie dwóch stron z informacjami 'extra' - instrukacja gry oraz ranking
-
   createPages() {
     this.infoPages = [
       new AppElement(
@@ -210,11 +231,11 @@ class InfoPages extends RenderComponent {
         `<h1>Jak grać ?</h1>
             <section>
                 <ol>
-                    <li>Utwórz słowa z podanych liter</li>
-                    <li>Aby zatwierdzić kliknij w dowolne miejsce poza planszą</li>
-                    <li>Nie musisz grać do odganięcia wszystkich słów! Zawsze możesz kliknąć zakończ!</li>
+                    <li>Utwórz jak najwięcej słów z wylosowanych liter!</li>
+                    <li>Aby sprawdzić poprawność kliknij "Sprawdź". </li>
+                    <li>W każdym momencie możesz zakończyć grę z uzyskaną liczbą punktów.</li>
                 </ol>
-                <p>PRZYJMENEJ ZABAWY!</p>
+                <p>PRZYJEMNEJ ZABAWY!</p>
             </section>`
       ),
       new AppElement(
@@ -238,42 +259,28 @@ class InfoPages extends RenderComponent {
   }
 }
 
-//renderowanie strony startowej
+//STARTING PAGE
 
 class StartPage extends RenderComponent {
   constructor(hookId) {
     super(hookId);
-    this.wakeUpDataBase();
   }
 
-  //Baza danych postawiona na mongoDB darmowym clusterze. Gdy przez pewien czas jest nieużywany zostaje uśpiony, należy go za pierwszym razem wybudzić - potem można używac bez potrzeby oczekiwania
-  wakeUpDataBase() {
-    let emptyQuery = new ConnectToDatabase(
-      "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
-      "/",
-      "POST"
-    );
-    emptyQuery.fetchData();
-  }
   infoPages() {
     new InfoPages("#app");
   }
 
   buttons() {
     new StartPageButtons(".buttonsRest");
-    // const rankButton = document.querySelector(".bRank");
-    // rankButton.addEventListener('click', this.rankingStorage);
-    // console.log('czy to jest rank ? ' + rankButton);
   }
 
   rankingStorage() {
     let renderRank = new RankingStorage();
     let rank = renderRank.getRank();
 
-    console.log(rank);
     let renderTable = new RenderTableElements(
       document.querySelector("table"),
-      ["Ranking"],
+      [`<i class="fas fa-crown"></i><br> <h1>RANKING</h1>`],
       rank
     );
     renderTable.addColSpan(document.querySelector("th"), 3);
@@ -289,23 +296,6 @@ class StartPage extends RenderComponent {
   }
 
   render() {
-    const mainPage = this.createRootElement("div", "container");
-
-    mainPage.innerHTML = `<div class="title">
-            <h1>Daję Słowo!</h1>
-        </div>
-        <div class="buttons">
-            <div class="buttonStart">
-            <button id="start">START</button>
-        </div>
-        <div class="buttonsRest"></div>
-        </div>
-        <footer class="footer">
-            <a href="#">Li</a>
-            <a href="#">Git</a>
-        </footer>
-        `;
-
     const startButton = document.getElementById("start");
     startButton.addEventListener("click", this.hideStartPage);
 
@@ -320,10 +310,10 @@ class StartPageButtons extends RenderComponent {
 
   constructor(hookId) {
     super(hookId);
-    this.fetchButtons();
+    this.createInfoButtons();
   }
 
-  fetchButtons() {
+  createInfoButtons() {
     this.buttons = [
       new AppElement("bHowTo", "JAK GRAĆ?", ".howTo"),
       new AppElement("bRank", "RANKING", ".rank"),
@@ -344,15 +334,19 @@ class StartPageButtons extends RenderComponent {
           hook.classList.add("show");
         }, 1);
 
-        //SPRAWDZIĆ ZAWIJANIE STRON POWODUJE POJAWIENIE SIE SCROLLA
+        let reference = hookCallback.bind(this);
+        hook.addEventListener("click", reference);
 
-        hook.addEventListener("click", () => {
+        function hookCallback(e) {
+          e.stopPropagation();
           hook.classList.remove("show");
           new PageMask(false);
           setTimeout(() => {
             hook.style.display = "none";
           }, 400);
-        });
+
+          hook.removeEventListener("click", reference);
+        }
       });
     }
   }
@@ -365,71 +359,35 @@ class BoardPageSkeleton extends RenderComponent {
   }
 
   render() {
-    const boardGamePage = this.createRootElement("div", "board");
-    boardGamePage.innerHTML = `
-            <div class="topBar">
-                <button class="actionButton backToMenu">Wstecz</button>
-                <div class="points">
-                </div>
-                <div class="score">34</div>
-            </div>
-            <div class="boardLetters">
-                <div class="lettersContainer">
-                </div>
-            </div>
-            <div class="functionBar">
-                <div class="functionButtons">
-                    <button class="actionButton newGame">New Game</button>
-                    <button class="actionButton checkingWord">Sprawdź</button>
-                    <button class="actionButton endGame">Zakończ Grę</button>
-                </div>
-                <div class="media">
-                    <a href="#">Li</a>
-                    <a href="#">Git</a>
-                </div>
-            </div>
-            <div class="wordsList">
-                <div>
-                    <ul class = "wordsListElements">
-                    </ul>
-                </div>
-            </div>
-            <div class="prompt">        
-            <label for="name">
-            <p>Jesteś zwycięzcą!</p> 
-            <p>Podaj imię!</p>
-            </label>
-            <input id="name" type="text" maxlength="10">
-            <button class="submitName">Zapisz</button>
-            </div>
-            <!-- <footer class="footer">
-            <a href="#">Li</a>
-            <a href="#">Git</a>
-            </footer> -->
-            <span id="loading"></span>
-        `;
-
     const rank = document.querySelector(".score");
 
-    rank.innerText = JSON.parse(localStorage.getItem("rank"))
-      ? JSON.parse(localStorage.getItem("rank"))[0].points
-      : "0";
+    rank.innerHTML = JSON.parse(localStorage.getItem("rank"))
+      ? `<i class="fas fa-trophy"></i> ${
+          JSON.parse(localStorage.getItem("rank"))[0].points
+        }`
+      : `<i class="fas fa-trophy"></i> 0`;
 
     rank.addEventListener("click", () => {
       const hook = document.querySelector(".rank");
       hook.style.display = "block";
+      new PageMask(true);
       setTimeout(() => {
-        new PageMask(true);
         hook.classList.add("show");
       }, 1);
 
-      hook.addEventListener("click", () => {
+      let reference = hookCallback.bind(this);
+      hook.addEventListener("click", reference);
+
+      function hookCallback(e) {
+        e.stopPropagation();
         hook.classList.remove("show");
         new PageMask(false);
         setTimeout(() => {
           hook.style.display = "none";
         }, 400);
-      });
+
+        hook.removeEventListener("click", reference);
+      }
     });
 
     this.createButtons();
@@ -463,10 +421,9 @@ class BoardPageSkeleton extends RenderComponent {
 class CreateBoardButtons extends RenderComponent {
   constructor(hookId) {
     super(hookId);
-    console.log(this.createdRows);
   }
 
-  //losowanie litery
+  //drawing letters
 
   drawLetter() {
     const Pl = [
@@ -506,9 +463,10 @@ class CreateBoardButtons extends RenderComponent {
 
     let num = Math.floor(Math.random() * Pl.length);
     let drawedLetter = Pl[num];
-    console.log("wylosowany index to " + num + " a litera to: " + drawedLetter);
     return drawedLetter;
   }
+
+  //1. creating row and 3 empty buttons
 
   renderSingleRow() {
     const row = this.createRootElement("div", "row");
@@ -518,16 +476,13 @@ class CreateBoardButtons extends RenderComponent {
       this.createRootElement("button", "letter", false),
       this.createRootElement("button", "letter", false),
     ];
+    //2. draw letter and insert into button, then place inside a row
 
     buttons.forEach((button) => {
       button.innerText = this.drawLetter();
-      // button.addEventListener("click", () => {
-      //   console.log(`Wybrano przycisk z literą ${button.innerText}`);
-      //   button.setAttribute("disabled", "true");
-      //   this.gameLogic.createWord(button.innerText);
-      // });
       row.appendChild(button);
     });
+
     return row;
   }
 
@@ -541,34 +496,33 @@ class CreateBoardButtons extends RenderComponent {
 class GameLogic extends RenderComponent {
   constructor() {
     super();
+
+    //implementing singleton
+
     if (GameLogic.exists) {
       return GameLogic.instance;
     }
     GameLogic.exists = true;
     GameLogic.instance = this;
+
     this.guessedWord = "";
     this.rightWords;
-    // this.getListOfCorrectWords();
+
     this.maxPossibleScore;
     this.score = 0;
     this.regExPattern = "";
     this.isFetching = false;
     this.addListenersToLetterButtons();
 
-    console.log(
-      this.rightWords,
-      this.ammountOfWords,
-      this.guessedWord,
-      this.score
-    );
     return this;
   }
 
   async getListOfCorrectWords() {
     this.regExPattern = new RegExBuildingEngine().finalRegEx;
-    console.log(this.regExPattern);
-    this.isFetching = true;
+    this.isFetching = true; //if true background should be covered with mask
+
     this.loadingInfo();
+
     let connectionToDatabase = new ConnectToDatabase(
       "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
       this.regExPattern,
@@ -576,9 +530,10 @@ class GameLogic extends RenderComponent {
     );
 
     let words = await connectionToDatabase.fetchData();
+    //goes further only when words are fetched
+
     this.isFetching = false;
     this.loadingInfo();
-    console.log("to sa words = " + words);
     this.setValues(words);
   }
 
@@ -593,28 +548,24 @@ class GameLogic extends RenderComponent {
       pageMaskChange.maskSwitch(false);
     }
   }
+
   setValues(listOfCorrectWords) {
     this.rightWords = listOfCorrectWords;
-    console.log(listOfCorrectWords);
+
+    console.log(
+      `These are Polish words you can create from these letters ${listOfCorrectWords}`
+    );
+
     this.maxPossibleScore = listOfCorrectWords.length;
     this.countPoints();
   }
   createWord(letter) {
     this.guessedWord = this.guessedWord + letter;
-    console.log(this.guessedWord);
-    // this.checkWord();
   }
 
   checkWord() {
     const isCorrectWord = this.rightWords.includes(this.guessedWord);
-    console.log(
-      "czy " +
-        this.guessedWord +
-        "  jest poprawne z " +
-        this.rightWords +
-        " ? odp: " +
-        isCorrectWord
-    );
+
     isCorrectWord ? this.correctWord() : this.enableButtons();
   }
 
@@ -631,7 +582,6 @@ class GameLogic extends RenderComponent {
 
     Array.from(buttons).forEach((button) => {
       button.addEventListener("click", () => {
-        console.log(`Wybrano przycisk z literą ${button.innerText}`);
         button.setAttribute("disabled", "true");
         this.createWord(button.innerText);
       });
@@ -654,9 +604,7 @@ class GameLogic extends RenderComponent {
   renderWordOnList() {
     const listElement = this.createRootElement("li", "wordOnList", false);
     this.hookId = document.querySelector(".wordsListElements");
-    console.log(this.hookId);
     listElement.innerText = this.guessedWord;
-    console.log(listElement);
     this.hookId.appendChild(listElement);
   }
 
@@ -666,13 +614,9 @@ class GameLogic extends RenderComponent {
       this.maxPossibleScore = list.length;
     }
     pointsElement.innerHTML = `<h1> ${this.score} / ${this.maxPossibleScore}</h1>`;
-
-    // this.isFetching = false;
-    // this.loadingInfo();
   }
 
   updateWordsList(arrayOfWords) {
-    console.log(arrayOfWords);
     this.rightWords = arrayOfWords;
   }
 }
@@ -682,56 +626,77 @@ class BoardFunctionButtons {
 
   addAction() {
     const clear = new ClearBoard();
-    console.log("zrobiono array");
+
     document.addEventListener("keypress", function (e) {
       if (e.key === " ") {
-        document.querySelector(".checkingWord").click();
+        const checkWordButton = document.querySelector(".checkingWord");
+        checkWordButton.click();
+        checkWordButton.classList.add("active");
+        setTimeout(function () {
+          checkWordButton.classList.remove("active");
+        }, 100);
       }
     });
+
     this.boardActionButtons.forEach((singleButton) => {
+      //1. each action button will have listener were 'on click' will be assigned to object of events (to multiple events)
       singleButton.addEventListener("click", () => {
-        console.log(singleButton.classList[1]);
         const events = {
           backToMenu: this.backToMenu,
           newGame: this.newGame,
           checkingWord: this.checkingWord,
           endGame: this.endGame,
         };
+        //2. each button has specific className corresponding to object's method. Only method corresponding to ClassName will be called.
 
-        events[singleButton.classList[1]](clear) ?? "to nie żaden button";
+        events.hasOwnProperty(singleButton.classList[1])
+          ? events[singleButton.classList[1]](clear)
+          : console.log("for this button we don't have event");
       });
     });
   }
 
   backToMenu() {
-    console.log(`button back to menu `);
     document.location.reload();
   }
 
   newGame(clear) {
-    console.log(`button new game`);
     let buttonLogic = new GameLogic();
-    // buttonLogic.updateWordsList(arr);
-    // buttonLogic.countPoints(arr);
+
     clear.clearButtons();
     buttonLogic.enableButtons();
     buttonLogic.addListenersToLetterButtons();
     clear.clearList();
     clear.clearPoints();
     buttonLogic.getListOfCorrectWords();
+    clear.enableActionButtons();
+    document.querySelector(".newGame").blur();
   }
 
   checkingWord() {
-    console.log(`button check `);
-
     let buttonLogic = new GameLogic();
     buttonLogic.checkWord();
   }
 
   endGame() {
-    console.log(`button end game`);
-
+    const endButton = document.querySelector(".endGame");
+    const checkButton = document.querySelector(".checkingWord");
+    endButton.disabled = true;
+    checkButton.disabled = true;
     const earnedPoints = new GameLogic().score;
+
+    let wordsLeft = new GameLogic().rightWords;
+
+    //render rest of word on list
+
+    wordsLeft.forEach((word) => {
+      const listElement = document.createElement("li");
+      listElement.className = "wordOnList";
+      this.hookId = document.querySelector(".wordsListElements");
+      listElement.innerText = word;
+      this.hookId.appendChild(listElement);
+    });
+
     new RankingStorage(earnedPoints).checkPosition();
   }
 }
@@ -746,19 +711,19 @@ class ClearBoard {
     buttons.forEach((row) => {
       row.parentNode.removeChild(row);
     });
-    console.log(buttons);
     new CreateBoardButtons(".lettersContainer");
   }
 
   clearPoints() {
     const gameLogic = new GameLogic();
     gameLogic.score = 0;
-    console.log(gameLogic.score);
     gameLogic.countPoints();
-    // gameLogic.ammountOfWords = gameLogic.listOfWords.length;
   }
 
-  clearWordsArray() {}
+  enableActionButtons() {
+    document.querySelector(".endGame").disabled = false;
+    document.querySelector(".checkingWord").disabled = false;
+  }
 }
 
 class ConnectToDatabase {
@@ -769,64 +734,16 @@ class ConnectToDatabase {
   }
 
   async fetchData() {
-    // let url = this.url;
-    // let regExPattern = this.regExPattern;
-    // let method = this.method;
-
-    // async function example() {
-    //   let arr = [];
-    //   const diaryReq = await fetch(
-    //     url + new URLSearchParams({ regex: regExPattern }),
-    //     {
-    //       method: method,
-    //     }
-    //   );
-    //   let diaryData = await diaryReq.json();
-    //   let pushData = await diaryData.forEach((item) => {
-    //     arr.push(item.PL);
-    //   });
-    //   console.log(arr);
-    //   // const foodReqs = await Promise.all(diaryData.map(({foodid}) => fetch(foodURL + foodid)));
-    //   return arr;
-    // }
-    // example();
-
-    ////////////////////////////////////
-    // let request = async () => {
-    //   let arr = [];
-    //   let response = await fetch(
-    //     this.url + new URLSearchParams({ regex: this.regExPattern }),
-    //     {
-    //       method: this.method,
-    //     }
-    //   );
-
-    //   let json = await response.json();
-
-    //   let pushData = await json.forEach((item) => {
-    //     arr.push(item.PL);
-    //   });
-    //   await arr;
-    //   return arr;
-    // };
-
-    // console.log("To są słowa ");
-    // request();
-    //   }
-    // }
-
     let arr = [];
     await fetch(this.url + new URLSearchParams({ regex: this.regExPattern }), {
       method: this.method,
     })
       .then((response) => response.json())
       .then((data) => {
-        console.log(data);
-
         data.forEach((item) => {
           arr.push(item.PL);
         });
-        console.dir("To są słowa " + arr);
+        console.dir(`Fetched from server ${arr}`);
       });
     return arr;
   }
@@ -844,41 +761,34 @@ class RegExBuildingEngine {
     let letterButtons = document.getElementsByClassName("letter");
     let lettersOnBoard = [];
     Array.from(letterButtons).forEach((button) => {
-      console.log(button);
-      console.log(button.innerText);
       lettersOnBoard.push(button.innerText);
     });
-    console.log("to jest letters z regexbuildingengine " + lettersOnBoard);
     return lettersOnBoard;
   }
 
   howManyOfEachLetter(drawedLetters) {
-    let quantityLeters = {};
+    //creating object where each letter is separate property with assigned quantity value - how many times appears on board expl: {L: 3, P: 2}
+
+    let quantityLetters = {};
     drawedLetters.forEach((value) => {
-      quantityLeters[`${value}`] = drawedLetters.filter(
+      quantityLetters[`${value}`] = drawedLetters.filter(
         (v) => v === value
       ).length;
     });
-    return quantityLeters;
+    return quantityLetters;
   }
 
   buildRegEx() {
     let regTemp = "";
     let regTemp2 = "";
-    // let finalRegEx = "";
+
     let lettersBase = this.howManyOfEachLetter(this.drawedLetters);
-    console.log(lettersBase);
+
     //first part of regEx
 
     for (let letter in lettersBase) {
-      // expected result example ---> (?!([^a]*a){3})
-      console.log(
-        "example - (?!([^a]*a){3})" +
-          " litera to " +
-          letter +
-          " całość tablicy to: " +
-          lettersBase
-      );
+      // expected result example ---> (?!([^A]*A){3})
+
       regTemp += `(?!([^${letter}]*${letter}){${lettersBase[letter] + 1}})`;
     }
 
@@ -887,7 +797,6 @@ class RegExBuildingEngine {
     for (let letter in lettersBase) {
       regTemp2 += `${letter}`;
     }
-
     this.baseRegEx =
       this.baseRegEx.slice(0, 2) + regTemp2 + this.baseRegEx.slice(2);
 
@@ -895,6 +804,7 @@ class RegExBuildingEngine {
       this.baseRegEx.slice(0, 1) + regTemp + this.baseRegEx.slice(1);
 
     console.log(this.finalRegEx);
+    //expected result (?!([^A]*A){3})(?!([^B]*B){2})...[AB...]{2,9}$)
     return this.finalRegEx;
   }
 }
@@ -903,26 +813,3 @@ class App {}
 
 const app = new StartPage("#app");
 app.render();
-
-// const but = new CreateBoardButtons('.lettersContainer');
-// but.renderButtons();
-
-// const buttonRank = document.querySelector('.bRank');
-// console.log(buttonRank);
-// buttonRank.addEventListener('click', ()=>{
-//     const rank = document.querySelector('.rank');
-//     console.log(rank);
-//     rank.classList.add('show');
-//     rank.addEventListener('click',()=>{
-//         rank.classList.remove('show');
-//     })
-// })
-// const buttonHowTo = document.querySelector('.bHowTo');
-// buttonHowTo.addEventListener('click', ()=>{
-//     const howTo = document.querySelector('.howTo');
-//     console.log(howTo);
-//     howTo.classList.add('show');
-//     howTo.addEventListener('click',()=>{
-//         howTo.classList.remove('show');
-//     })
-// })

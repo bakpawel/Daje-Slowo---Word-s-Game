@@ -1,13 +1,18 @@
 *{
     box-sizing: border-box;
-    font-size: 10px;
+    /* font-size: 10px; */
     font-family: 'Gill Sans', 'Gill Sans MT', 'Calibri', 'Trebuchet MS', sans-serif;
-    overflow: hidden;
+    /* overflow: hidden; */
+    /* perspective: 450px; */
 }
 html{
   
     width: 100vw;
-    height: 100vh;   overflow: hidden;
+    height: 100vh;   
+    overflow: hidden;
+}
+body{
+    overflow: hidden;
 }
 #app{
     width: 100vw;
@@ -21,14 +26,59 @@ button {
     border-radius: 20%;
     transition: .6s ease opacity;
 }
-
 .buttonStart> button{
+    position: relative;
     background-color: rgb(22,245,240);
     border-radius: 15px;
-    width: 80%;
+    width: 70%;
     height: 70%;
-    font-size: large;
+    /* font-size: .5rem; */
+    top: 0;
+    left: 0;
 }
+
+#start{
+    /* --h: 4em; */
+    margin: .5em;
+    border: solid .375em transparent;
+    padding: calc(.375em + 2px);
+    width: 8.25em;
+    height: 8.25em;
+    border-radius:  50%;
+    box-shadow: inset 0 0 0 2px #060606;
+    background: 
+    linear-gradient(#f09898, #fff) content-box, 
+    linear-gradient(#fff, #979797) padding-box, 
+    linear-gradient(#a08149, #fbfbfb) border-box;
+    font: inherit;
+    /* transition: .7s; */
+    transition: .5s ease all;
+    /* transition: box-shadow 0.3s ease-in-out; */
+    cursor: pointer;
+}
+#start:hover {
+    transform: scale(1.05, 1.05);
+    top: -5px;
+    /* left: -5px; */
+    outline: solid 0 transparent;
+		filter: sepia(1) hue-rotate(270deg);
+    /* background-color: rgb(59, 247, 35); */
+    /* box-shadow: 5px 3px 10px rgb(11, 100, 91); */
+}
+#start::after {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    border-radius: 5px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    transition: opacity 0.3s ease-in-out;
+  }
+  #start:hover::after{
+      opacity: 1;
+  }
 .container, .title, .buttons, .buttonsRest{
     display: flex;
     align-items: center;
@@ -68,7 +118,7 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
-    flex-basis: 30%;
+    flex-basis: 60%;
     width: 50%;
 }
 
@@ -87,14 +137,19 @@ button {
 }
 
 footer{
-    background-color: chocolate;
+    background-color: none;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
-    flex-basis: 5%;
+    flex-basis: 9%;
     width: 100vw;
 }
-
+footer a {
+    /* margin: 2px; */
+    padding: 3px;
+    border-radius: 20%;
+    background-color: whitesmoke;
+}
 .hidden {
     display: none;
 }
@@ -187,7 +242,7 @@ table {
     top:-20%;
     left:50%;
     transform: translate(-50%);
-    width:fit-content;  
+    max-width: 90%;  
     max-height: fit-content;
     transition: all 0.5s ease-out;
     
@@ -343,7 +398,11 @@ label{
     border: 1px solid red;
     background-color: #fccd82;
     border-radius: 20px 20px 0 0;
+    /* overflow-y: scroll; */
+    overflow:initial;
 }
+
+
 .functionBar {
     display: flex;
     justify-content: space-evenly;
@@ -374,13 +433,21 @@ label{
     box-shadow: inset 0px 0px 10px 5px #f7c50000, 0px 0px 5px 4px rgb(199, 7, 7);
   
 }
+
+
+/* single styles */
+#start {
+    /* border-radius: 100%; */
+}
+
+
 @media screen and (orientation: landscape){
     .container{
         /* background-color: yellow; */
     }
     
     .buttonStart{
-        flex-basis: 50%;
+        flex-basis: 60%;
         align-items: center;
     }
     .buttonsRest{
@@ -402,6 +469,7 @@ label{
         align-self: center;
         height: 50vh;
         border-radius: 10px;
+        
     }
     .functionBar{
         flex-wrap: wrap;
