@@ -133,7 +133,7 @@ class RankingStorage {
       inputName.disabled = true;
       submitName.innerHTML = "Zamknij";
     } else {
-      description.innerHTML = "Zwycięzca może być tylko jeden!";
+      description.innerHTML = "Jesteś Zwycięzcą!";
       inputName.value = "";
       submitName.disabled = true;
       submitName.innerHTML = "Zapisz";
@@ -328,11 +328,8 @@ class StartPageButtons extends RenderComponent {
 
       button.addEventListener("click", () => {
         const hook = document.querySelector(arrEl.hookName);
-        hook.style.display = "block";
         new PageMask(true);
-        setTimeout(() => {
-          hook.classList.add("show");
-        }, 1);
+        hook.classList.add("show");
 
         let reference = hookCallback.bind(this);
         hook.addEventListener("click", reference);
@@ -341,9 +338,6 @@ class StartPageButtons extends RenderComponent {
           e.stopPropagation();
           hook.classList.remove("show");
           new PageMask(false);
-          setTimeout(() => {
-            hook.style.display = "none";
-          }, 400);
 
           hook.removeEventListener("click", reference);
         }
@@ -369,7 +363,6 @@ class BoardPageSkeleton extends RenderComponent {
 
     rank.addEventListener("click", () => {
       const hook = document.querySelector(".rank");
-      hook.style.display = "block";
       new PageMask(true);
       setTimeout(() => {
         hook.classList.add("show");
@@ -382,9 +375,6 @@ class BoardPageSkeleton extends RenderComponent {
         e.stopPropagation();
         hook.classList.remove("show");
         new PageMask(false);
-        setTimeout(() => {
-          hook.style.display = "none";
-        }, 400);
 
         hook.removeEventListener("click", reference);
       }

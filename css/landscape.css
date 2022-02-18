@@ -30,7 +30,7 @@
     }
 
     .show{
-        right: 25%;
+        transform: translateX(50%);
     }
     .board{
         justify-content: space-evenly;
