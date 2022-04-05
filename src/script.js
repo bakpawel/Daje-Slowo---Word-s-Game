@@ -179,7 +179,6 @@ class RankingStorage {
     }
 
     function enterHit(e) {
-      console.log(e);
       e.stopPropagation();
       if (e.key === "Enter") {
         submitName.click();
@@ -193,15 +192,11 @@ class RankingStorage {
       name: this.playerName,
     };
 
-    console.log(newRecord);
-
     this.rank.push(newRecord);
     this.rank.sort((a, b) =>
       a.points < b.points ? 1 : b.points < a.points ? -1 : 0
     );
     this.rank.pop();
-
-    console.dir(this.rank);
 
     localStorage.setItem("rank", JSON.stringify(this.rank));
     this.updatedRank();
@@ -328,8 +323,11 @@ class StartPageButtons extends RenderComponent {
 
       button.addEventListener("click", () => {
         const hook = document.querySelector(arrEl.hookName);
+        hook.style.display = "block";
         new PageMask(true);
-        hook.classList.add("show");
+        setTimeout(() => {
+          hook.classList.add("show");
+        }, 1);
 
         let reference = hookCallback.bind(this);
         hook.addEventListener("click", reference);
@@ -338,6 +336,9 @@ class StartPageButtons extends RenderComponent {
           e.stopPropagation();
           hook.classList.remove("show");
           new PageMask(false);
+          setTimeout(() => {
+            hook.style.display = "none";
+          }, 400);
 
           hook.removeEventListener("click", reference);
         }
@@ -363,6 +364,7 @@ class BoardPageSkeleton extends RenderComponent {
 
     rank.addEventListener("click", () => {
       const hook = document.querySelector(".rank");
+      hook.style.display = "block";
       new PageMask(true);
       setTimeout(() => {
         hook.classList.add("show");
@@ -375,6 +377,9 @@ class BoardPageSkeleton extends RenderComponent {
         e.stopPropagation();
         hook.classList.remove("show");
         new PageMask(false);
+        setTimeout(() => {
+          hook.style.display = "none";
+        }, 400);
 
         hook.removeEventListener("click", reference);
       }
@@ -588,7 +593,7 @@ class GameLogic extends RenderComponent {
 
   removeWord(word) {
     this.rightWords = this.rightWords.filter((element) => element != word);
-    console.log(this.rightWords);
+    // console.log(this.rightWords);
   }
 
   renderWordOnList() {
@@ -793,7 +798,6 @@ class RegExBuildingEngine {
     this.finalRegEx =
       this.baseRegEx.slice(0, 1) + regTemp + this.baseRegEx.slice(1);
 
-    console.log(this.finalRegEx);
     //expected result (?!([^A]*A){3})(?!([^B]*B){2})...[AB...]{2,9}$)
     return this.finalRegEx;
   }

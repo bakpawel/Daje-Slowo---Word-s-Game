@@ -100,6 +100,7 @@ button {
 footer{
     width: 100vw;
     margin-bottom: 1rem;
+    padding-bottom: 4rem;
     display: flex;
     justify-content: space-evenly;
     align-items: center;
@@ -125,6 +126,7 @@ i{
 
 
 .rank, .howTo {
+    display: none;
     width: 90%;
     padding-bottom: 2rem;
     position:absolute;
@@ -139,12 +141,12 @@ i{
     backdrop-filter: blur( 4.5px );
 
     transform: translateX(120vw);
-    transition: transform 0.8s cubic-bezier(0.175, 0.7, 0.22, 1.1);
+    transition: transform 0.8s;
     overflow: hidden;
     z-index: 10;
 }
 .show{
-    
+    display: block;
     transform: translateX(5%);
 }
 
@@ -331,7 +333,7 @@ label{
     bottom: 0;
     opacity: 0;
     background: #00000080;
-    transition: all .3s ease-out;
+    transition: opacity .3s ease-out;
     z-index:2;
 }
 .page-mask-active {
