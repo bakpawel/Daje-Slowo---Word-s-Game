@@ -18,13 +18,13 @@ This is a game where you need to find as many words as possible from the given l
 
 * JavaScript
 
-* MongoDB
+* [MongoDB](https://www.mongodb.com/)
 
 * RegEx
 
-* FontsAwesome
+* [FontsAwesome](https://fontawesome.com/)
 
-* SimpleBar Library
+* [SimpleBar Library](https://grsmto.github.io/simplebar/)
 
 
 ## Features
@@ -63,7 +63,6 @@ This is a game where you need to find as many words as possible from the given l
 
 3) sort, map, for_each, includes, filter, fetch
 
- 
 
 #### Buttons
 
@@ -86,36 +85,24 @@ On board besides of letters buttons you have other function buttons:
 
 ## Screenshots
 
- 
+ <img src="img/printscreen.png" alt="printscreen" width="1000"/>
 
 ## Launch
 
- 
-
 ### Live demo
 
-You can see deployed live demo here.
+You can see deployed live demo [_here_](https://dajeslowo-wordgame.web.app/)
 
  
-
 ### Localy
 
-To run this project clone this repo to your desktop and open index.html in your browser.
+To run this project clone this repo to your desktop and open `index.html` in your browser.
 
- 
-
- 
 
 ## Project status
 
 It's finished! :) But some elements could be upgraded.
 
-## Sources
-
-One day I've found realy old cd with game from my childhood similar to this one. This cd contained .exe file only to lunch the game. It was an inspiration to make this project. Code was not based on any other code. It's entirely my own project.
-
- 
-
 ## Contact
 
-Created by @PawelBak - feel free to contact me! :)
+ Created by [@PawelBak](https://pawel-bak-portfolio.web.app/) - feel free to contact me!
