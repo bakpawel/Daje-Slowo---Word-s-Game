@@ -521,7 +521,7 @@ class GameLogic extends RenderComponent {
     let connectionToDatabase = new ConnectToDatabase(
       "https://eu-central-1.aws.webhooks.mongodb-realm.com/api/client/v2.0/app/application-0-pmhwm/service/PlWords/incoming_webhook/plWords?",
       this.regExPattern,
-      "POST"
+      "GET"
     );
 
     let words = await connectionToDatabase.fetchData();
